@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BAHAR TOPRAK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FBFAFF; --card: #FFFFFF; --ink: #2A2A2E; --ink-soft: #8A8894; --line: #ECE9F5;
+    --pink: #FF6FA5; --pink-soft: #FFE6EF; --pink-txt: #C23D74;
+    --yellow: #FFB92E; --yellow-soft: #FFF3D9; --yellow-txt: #B4740A;
+    --blue: #4D8DFF; --blue-soft: #E4EDFF; --blue-txt: #1E5BCC;
+    --green: #2FBE87; --green-soft: #DFF7EC; --green-txt: #1D8560;
+    --purple: #9B6BFF; --purple-soft: #F0E9FF; --purple-txt: #6E3FD6;
+  }
+  body.dark{
+    --bg: #17151F; --card: #221F2C; --ink: #F1EEF7; --ink-soft: #9A93AC; --line: #33304040;
+    --pink-soft: #3A2530; --yellow-soft: #362C18; --blue-soft: #1D2A40; --green-soft: #17332A; --purple-soft: #2C2440;
+  }
+  body{ transition:background .2s, color .2s; }
+  .subtitle{ font-size:13px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--pink-txt); margin:0 0 4px; }
+  .top-row{ display:flex; align-items:center; justify-content:space-between; }
+  .theme-btn{
+    border:1px solid var(--line); background:var(--card); border-radius:10px;
+    width:38px; height:38px; font-size:17px; cursor:pointer; color:var(--ink); flex-shrink:0;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:'Inter', sans-serif; background:var(--bg); color:var(--ink); min-height:100vh; padding:32px 16px 80px; }
+  .wrap{ max-width:480px; margin:0 auto; }
+  h1{ font-family:'Baloo 2', sans-serif; font-weight:700; font-size:28px; margin:0 0 2px; }
+  .date{ color:var(--ink-soft); font-size:14px; margin-bottom:20px; }
+
+  .tabs{ display:flex; gap:5px; background:var(--card); border-radius:14px; padding:5px; margin-bottom:22px; border:1px solid var(--line); }
+  .tab{ flex:1; text-align:center; padding:10px 4px; border-radius:10px; font-size:12.5px; font-weight:600; font-family:'Baloo 2', sans-serif; color:var(--ink-soft); cursor:pointer; user-select:none; }
+  .tab.active.t-tasks{ background:var(--blue-soft); color:var(--blue-txt); }
+  .tab.active.t-mood{ background:var(--pink-soft); color:var(--pink-txt); }
+  .tab.active.t-cal{ background:var(--green-soft); color:var(--green-txt); }
+  .tab.active.t-chat{ background:var(--purple-soft); color:var(--purple-txt); }
+  .panel{ display:none; }
+  .panel.active{ display:block; }
+
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px 18px; margin-bottom:16px; }
+  .label{ font-size:12px; font-weight:600; letter-spacing:0.02em; text-transform:uppercase; margin:0 0 10px 2px; }
+
+  .note-card{ background:var(--purple-soft); border:none; }
+  .note-label{ color:var(--purple-txt); font-size:12px; font-weight:600; text-transform:uppercase; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
+  .note-text{ width:100%; border:none; background:transparent; resize:none; font-family:'Baloo 2', sans-serif; font-size:17px; color:var(--ink); line-height:1.5; min-height:40px; outline:none; }
+  .note-text::placeholder{ color:#B29EE0; }
+
+  .add-row{ display:flex; gap:8px; margin-bottom:20px; }
+  .add-row input{ flex:1; border:1px solid var(--line); background:var(--card); border-radius:10px; padding:12px 14px; font-size:15px; outline:none; }
+  .add-row input:focus{ border-color:var(--blue); }
+  .add-row button{ border:none; background:var(--blue); color:#fff; border-radius:10px; padding:0 18px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Baloo 2', sans-serif; }
+
+  .task{ display:flex; align-items:flex-start; gap:10px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:13px 14px; margin-bottom:8px; }
+  .task.done{ background:var(--green-soft); border-color:var(--green-soft); }
+  .check{ width:20px; height:20px; border-radius:50%; border:1.5px solid var(--ink-soft); flex-shrink:0; margin-top:1px; cursor:pointer; display:flex; align-items:center; justify-content:center; background:transparent; font-size:12px; }
+  .task.done .check{ background:var(--green); border-color:var(--green); color:#fff; }
+  .task-body{ flex:1; min-width:0; }
+  .task-text{ font-size:15px; line-height:1.4; }
+  .task.done .task-text{ text-decoration:line-through; color:var(--ink-soft); }
+  .del{ border:none; background:transparent; color:var(--ink-soft); font-size:18px; cursor:pointer; padding:2px 4px; flex-shrink:0; }
+  .del:hover{ color:var(--pink); }
+  .empty{ color:var(--ink-soft); font-size:14px; padding:16px 0; text-align:center; }
+  .by-tag{ font-size:11px; font-weight:600; color:var(--ink-soft); background:var(--line); padding:2px 7px; border-radius:6px; display:inline-block; margin-top:5px; }
+
+  .mood-grid{ display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; margin-bottom:14px; }
+  .mood-btn{ background:var(--card); border:1.5px solid var(--line); border-radius:12px; font-size:24px; padding:10px 0; cursor:pointer; text-align:center; }
+  .mood-btn.selected{ border-color:var(--pink); background:var(--pink-soft); }
+  .mood-note-row{ display:flex; gap:8px; margin-bottom:8px; }
+  .mood-note-row input{ flex:1; border:1px solid var(--line); border-radius:10px; padding:11px 13px; font-size:14px; outline:none; }
+  .mood-save{ width:100%; border:none; background:var(--pink); color:#fff; border-radius:10px; padding:12px 0; font-size:14px; font-weight:600; cursor:pointer; margin-bottom:22px; font-family:'Baloo 2', sans-serif; }
+  .mood-entry{ display:flex; align-items:center; gap:12px; padding:11px 4px; border-bottom:1px solid var(--line); }
+  .mood-entry:last-child{ border-bottom:none; }
+  .mood-emoji{ font-size:24px; width:32px; text-align:center; flex-shrink:0; }
+  .mood-body{ flex:1; min-width:0; }
+  .mood-text{ font-size:14px; }
+  .mood-time{ font-size:12px; color:var(--ink-soft); }
+  .mood-del{ border:none; background:transparent; color:var(--ink-soft); font-size:16px; cursor:pointer; flex-shrink:0; }
+
+  .cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .cal-head button{ border:1px solid var(--line); background:var(--card); border-radius:8px; width:32px; height:32px; font-size:16px; cursor:pointer; color:var(--ink); }
+  .cal-title{ font-family:'Baloo 2', sans-serif; font-weight:600; font-size:17px; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; margin-bottom:18px; }
+  .cal-dow{ text-align:center; font-size:11px; color:var(--ink-soft); font-weight:600; padding-bottom:4px; }
+  .cal-day{ aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:10px; font-size:13px; cursor:pointer; position:relative; background:var(--card); border:1px solid var(--line); }
+  .cal-day.empty2{ visibility:hidden; cursor:default; }
+  .cal-day.today{ border-color:var(--blue); font-weight:600; }
+  .cal-day.has-rem{ background:var(--yellow-soft); border-color:var(--yellow-soft); }
+  .cal-day .dot{ width:5px; height:5px; border-radius:50%; background:var(--yellow-txt); margin-top:2px; }
+  .cal-day.selected{ background:var(--blue); color:#fff; border-color:var(--blue); }
+  .cal-day.selected .dot{ background:#fff; }
+
+  .rem-form{ display:flex; gap:8px; margin-bottom:16px; }
+  .rem-form input{ flex:1; border:1px solid var(--line); border-radius:10px; padding:11px 13px; font-size:14px; outline:none; }
+  .rem-form button{ border:none; background:var(--yellow); color:#fff; border-radius:10px; padding:0 16px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Baloo 2', sans-serif; }
+  .rem-item{ display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:8px; }
+  .rem-date-badge{ background:var(--yellow-soft); color:var(--yellow-txt); font-size:12px; font-weight:600; padding:5px 8px; border-radius:8px; flex-shrink:0; text-align:center; min-width:44px; }
+  .rem-body{ flex:1; min-width:0; }
+  .rem-text{ font-size:14px; }
+  .rem-cal-link{ font-size:16px; text-decoration:none; flex-shrink:0; }
+
+  .chat-box{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px; height:360px; overflow-y:auto; margin-bottom:12px; display:flex; flex-direction:column; gap:10px; }
+  .chat-msg{ max-width:80%; }
+  .chat-msg.me{ align-self:flex-end; text-align:right; }
+  .chat-bubble{ display:inline-block; background:var(--blue-soft); color:var(--blue-txt); padding:9px 13px; border-radius:14px 14px 14px 4px; font-size:14px; text-align:left; }
+  .chat-msg.me .chat-bubble{ background:var(--purple-soft); color:var(--purple-txt); border-radius:14px 14px 4px 14px; }
+  .chat-meta{ font-size:11px; color:var(--ink-soft); margin-top:3px; }
+  .chat-form{ display:flex; gap:8px; }
+  .chat-form input{ flex:1; border:1px solid var(--line); border-radius:10px; padding:12px 14px; font-size:15px; outline:none; }
+  .chat-form button{ border:none; background:var(--purple); color:#fff; border-radius:10px; padding:0 18px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Baloo 2', sans-serif; }
+
+  .name-overlay{ position:fixed; inset:0; background:rgba(42,42,46,0.55); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px; }
+  .name-box{ background:var(--card); border-radius:18px; padding:28px 24px; max-width:320px; width:100%; text-align:center; }
+  .name-box .emoji{ font-size:36px; margin-bottom:8px; }
+  .name-box h2{ font-family:'Baloo 2', sans-serif; font-size:21px; margin:0 0 6px; }
+  .name-box p{ font-size:13px; color:var(--ink-soft); margin:0 0 18px; line-height:1.5; }
+  .name-box input{ width:100%; border:1px solid var(--line); border-radius:10px; padding:13px 14px; font-size:15px; outline:none; margin-bottom:12px; text-align:center; font-family:'Baloo 2', sans-serif; }
+  .name-box button{ width:100%; border:none; background:var(--purple); color:#fff; border-radius:10px; padding:13px 0; font-size:14px; font-weight:600; cursor:pointer; font-family:'Baloo 2', sans-serif; }
+
+  .tab.active.t-dates{ background:var(--yellow-soft); color:var(--yellow-txt); }
+  .tab.active.t-surprise{ background:var(--pink-soft); color:var(--pink-txt); }
+  .tab.active.t-memories{ background:var(--purple-soft); color:var(--purple-txt); }
+
+  .countdown-card{
+    display:flex; align-items:center; gap:14px; background:var(--card); border:1px solid var(--line);
+    border-radius:14px; padding:14px 16px; margin-bottom:10px;
+  }
+  .countdown-num{
+    font-family:'Baloo 2', sans-serif; font-weight:700; font-size:26px; color:var(--yellow-txt);
+    background:var(--yellow-soft); border-radius:12px; padding:6px 12px; min-width:54px; text-align:center; flex-shrink:0;
+  }
+  .countdown-num small{ display:block; font-size:10px; font-weight:600; }
+  .countdown-body{ flex:1; min-width:0; }
+  .countdown-title{ font-size:15px; font-weight:600; }
+  .countdown-date{ font-size:12px; color:var(--ink-soft); }
+  .dates-del{ border:none; background:transparent; color:var(--ink-soft); font-size:18px; cursor:pointer; flex-shrink:0; }
+  .dates-form{ display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+  .dates-form input[type=text]{ flex:1; min-width:120px; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px; padding:11px 13px; font-size:14px; outline:none; }
+  .dates-form input[type=date]{ border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px; padding:11px 10px; font-size:13px; outline:none; }
+  .dates-form button{ border:none; background:var(--yellow); color:#fff; border-radius:10px; padding:0 16px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Baloo 2', sans-serif; }
+  .rec-row{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-soft); margin-bottom:16px; }
+
+  .surprise-card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:10px;
+  }
+  .surprise-locked{ display:flex; align-items:center; gap:10px; color:var(--ink-soft); font-size:14px; }
+  .surprise-open{ font-size:14px; line-height:1.5; }
+  .surprise-meta{ font-size:11px; color:var(--ink-soft); margin-top:8px; }
+  .surprise-form textarea{
+    width:100%; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px;
+    padding:11px 13px; font-size:14px; outline:none; resize:vertical; min-height:70px; margin-bottom:8px; font-family:'Inter',sans-serif;
+  }
+  .surprise-form-row{ display:flex; gap:8px; align-items:center; margin-bottom:16px; }
+  .surprise-form-row input[type=date]{ border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px; padding:10px; font-size:13px; outline:none; }
+  .surprise-form-row button{ border:none; background:var(--pink); color:#fff; border-radius:10px; padding:0 16px; height:40px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Baloo 2', sans-serif; }
+
+  .mem-add{
+    border:2px dashed var(--line); border-radius:14px; padding:20px; text-align:center; cursor:pointer;
+    color:var(--ink-soft); font-size:13px; margin-bottom:16px;
+  }
+  .mem-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .mem-item{ background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .mem-item img{ width:100%; height:140px; object-fit:cover; display:block; }
+  .mem-item-body{ padding:9px 10px; }
+  .mem-caption{ font-size:12.5px; margin-bottom:4px; }
+  .mem-meta{ font-size:10.5px; color:var(--ink-soft); display:flex; justify-content:space-between; align-items:center; }
+  .mem-del{ border:none; background:transparent; color:var(--ink-soft); font-size:14px; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top-row">
+    <div>
+      <h1>BAHAR TOPRAK</h1>
+      <div class="subtitle">beautician</div>
+      <div class="date" id="today"></div>
+    </div>
+    <button class="theme-btn" id="themeBtn">🌙</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab t-tasks active" data-tab="tasks">Görevler</div>
+    <div class="tab t-mood" data-tab="mood">Ruh hali</div>
+    <div class="tab t-cal" data-tab="cal">Takvim</div>
+    <div class="tab t-dates" data-tab="dates">Günler</div>
+    <div class="tab t-memories" data-tab="memories">Anılar</div>
+  </div>
+
+  <div class="panel active" id="panel-tasks">
+    <div class="card note-card">
+      <div class="note-label"><span>Günlük görev</span></div>
+      <textarea class="note-text" id="loveNote" placeholder="Bugün yapılacak en önemli iş..."></textarea>
+    </div>
+    <div class="add-row">
+      <input type="text" id="newTask" placeholder="Yeni bir şey ekle...">
+      <button id="addBtn">Ekle</button>
+    </div>
+    <div id="taskList"></div>
+  </div>
+
+  <div class="panel" id="panel-mood">
+    <div class="label" style="color:var(--pink-txt);">Şu an nasıl hissediyorsun?</div>
+    <div class="mood-grid" id="moodGrid"></div>
+    <div class="mood-note-row"><input type="text" id="moodNoteInput" placeholder="İstersen kısa bir not ekle..."></div>
+    <button class="mood-save" id="moodSaveBtn">Kaydet</button>
+    <div class="label" style="color:var(--pink-txt);">Geçmiş</div>
+    <div class="card" id="moodFeed" style="padding:6px 14px;"></div>
+  </div>
+
+  <div class="panel" id="panel-cal">
+    <div class="cal-head">
+      <button id="prevMonth">‹</button>
+      <div class="cal-title" id="calTitle"></div>
+      <button id="nextMonth">›</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="label" style="color:var(--green-txt);" id="selDateLabel">Bir tarih seç</div>
+    <div class="rem-form">
+      <input type="text" id="remInput" placeholder="Bu tarih için hatırlatıcı yaz...">
+      <button id="remAddBtn">Ekle</button>
+    </div>
+    <div class="label" style="color:var(--green-txt);">Yaklaşan hatırlatıcılar</div>
+    <div id="remList"></div>
+  </div>
+
+  <div class="panel" id="panel-dates">
+    <div class="label" style="color:var(--yellow-txt);">Geri sayım</div>
+    <div id="datesList"></div>
+    <div class="label" style="color:var(--yellow-txt); margin-top:18px;">Yeni önemli gün</div>
+    <div class="dates-form">
+      <input type="text" id="dateTitleInput" placeholder="Ne için? (örn. Yıldönümü)">
+      <input type="date" id="dateValueInput">
+      <button id="dateAddBtn">Ekle</button>
+    </div>
+    <label class="rec-row"><input type="checkbox" id="dateRecurring" checked> Her yıl tekrarlasın</label>
+  </div>
+
+  <div class="panel" id="panel-memories">
+    <div class="mem-add" id="memAddBtn">📷 Bir fotoğraf ekle, altına birkaç kelime yaz</div>
+    <input type="file" id="memFileInput" accept="image/*" style="display:none;">
+    <div class="mem-grid" id="memGrid"></div>
+  </div>
+
+</div>
+
+<script>
+const MOOD_EMOJIS = ['😊','😍','🥰','😴','😭','😡','😰','😌','🤩','😔','🥳','😤','🤔','😅','💪','🤗'];
+const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const DOW = ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'];
+
+let tasks = [], moods = [], reminders = {};
+let loveNote = { text: '', by: '' };
+let myName = '';
+let selectedMood = null, selectedDate = null, calYear, calMonth;
+let noteTimer = null, suppressNoteRerender = false;
+
+function todayISO(){ const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function isoOf(y,m,d){ return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
+
+async function initName(){ myName = ''; }
+
+/* ---------- LOAD ALL ---------- */
+async function loadAll(){
+  await initName();
+  await loadTheme();
+  try{ const t = await window.storage.get('tasks', true); tasks = t ? JSON.parse(t.value) : []; }catch(e){ tasks = []; }
+  try{ const n = await window.storage.get('loveNote', true); loveNote = n ? JSON.parse(n.value) : { text:'', by:'' }; document.getElementById('loveNote').value = loveNote.text || ''; }catch(e){}
+  try{ const m = await window.storage.get('moods', true); moods = m ? JSON.parse(m.value) : []; }catch(e){ moods = []; }
+  try{ const r = await window.storage.get('reminders', true); reminders = r ? JSON.parse(r.value) : {}; }catch(e){ reminders = {}; }
+  try{ const sd = await window.storage.get('specialDates', true); specialDates = sd ? JSON.parse(sd.value) : []; }catch(e){ specialDates = []; }
+  try{ const mem = await window.storage.get('memories', true); memories = mem ? JSON.parse(mem.value) : []; }catch(e){ memories = []; }
+
+  renderTasks(); renderMoodGrid(); renderMoodFeed();
+  const now = new Date();
+  calYear = now.getFullYear(); calMonth = now.getMonth(); selectedDate = todayISO();
+  renderCalendar(); renderReminders();
+  renderDates(); renderMemories();
+
+  lastTaskLen = tasks.length;
+  maybeAskNotifPermission();
+}
+
+/* ---------- TASKS ---------- */
+async function saveTasks(){ try{ await window.storage.set('tasks', JSON.stringify(tasks), true); }catch(e){} }
+function renderTasks(){
+  const list = document.getElementById('taskList');
+  list.innerHTML = '';
+  if(tasks.length === 0){ list.innerHTML = '<div class="empty">Henüz bir şey eklenmedi.</div>'; return; }
+  tasks.forEach((t, i) => {
+    const row = document.createElement('div');
+    row.className = 'task' + (t.done ? ' done' : '');
+    row.innerHTML = `<div class="check">${t.done?'✓':''}</div><div class="task-body"><div class="task-text">${t.text}</div>${t.by?`<div class="by-tag">${t.by}</div>`:''}</div><button class="del">×</button>`;
+    row.querySelector('.check').onclick = () => { tasks[i].done = !tasks[i].done; renderTasks(); saveTasks(); };
+    row.querySelector('.del').onclick = () => { tasks.splice(i,1); renderTasks(); saveTasks(); };
+    list.appendChild(row);
+  });
+}
+document.getElementById('addBtn').onclick = addTask;
+document.getElementById('newTask').addEventListener('keydown', e => { if(e.key === 'Enter') addTask(); });
+function addTask(){
+  const input = document.getElementById('newTask');
+  const val = input.value.trim();
+  if(!val) return;
+  tasks.unshift({ text: val, done: false, by: myName });
+  input.value = '';
+  renderTasks(); saveTasks();
+}
+document.getElementById('loveNote').addEventListener('input', e => {
+  clearTimeout(noteTimer);
+  const val = e.target.value;
+  noteTimer = setTimeout(async () => {
+    loveNote = { text: val, by: myName };
+    try{ await window.storage.set('loveNote', JSON.stringify(loveNote), true); }catch(err){}
+  }, 500);
+});
+
+/* ---------- MOOD ---------- */
+function renderMoodGrid(){
+  const grid = document.getElementById('moodGrid');
+  grid.innerHTML = '';
+  MOOD_EMOJIS.forEach(emo => {
+    const btn = document.createElement('div');
+    btn.className = 'mood-btn'; btn.textContent = emo;
+    btn.onclick = () => { selectedMood = emo; document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); };
+    grid.appendChild(btn);
+  });
+}
+async function saveMoods(){ try{ await window.storage.set('moods', JSON.stringify(moods), true); }catch(e){} }
+document.getElementById('moodSaveBtn').onclick = async () => {
+  if(!selectedMood) return;
+  const noteInput = document.getElementById('moodNoteInput');
+  moods.unshift({ emoji: selectedMood, text: noteInput.value.trim(), ts: Date.now(), by: myName });
+  noteInput.value = ''; selectedMood = null;
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));
+  renderMoodFeed(); saveMoods();
+};
+function timeAgo(ts){
+  const diff = Math.floor((Date.now()-ts)/1000);
+  if(diff<60) return 'az önce';
+  if(diff<3600) return Math.floor(diff/60)+' dk önce';
+  if(diff<86400) return Math.floor(diff/3600)+' sa önce';
+  const d = new Date(ts); return d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear();
+}
+function renderMoodFeed(){
+  const feed = document.getElementById('moodFeed');
+  feed.innerHTML = '';
+  if(moods.length === 0){ feed.innerHTML = '<div class="empty">Henüz bir ruh hali kaydedilmedi.</div>'; return; }
+  moods.forEach((m, i) => {
+    const row = document.createElement('div');
+    row.className = 'mood-entry';
+    row.innerHTML = `<div class="mood-emoji">${m.emoji}</div><div class="mood-body">${m.text?`<div class="mood-text">${m.text}</div>`:''}<div class="mood-time">${timeAgo(m.ts)}${m.by?' · '+m.by:''}</div></div><button class="mood-del">×</button>`;
+    row.querySelector('.mood-del').onclick = () => { moods.splice(i,1); renderMoodFeed(); saveMoods(); };
+    feed.appendChild(row);
+  });
+}
+
+/* ---------- CALENDAR ---------- */
+async function saveReminders(){ try{ await window.storage.set('reminders', JSON.stringify(reminders), true); }catch(e){} }
+function gcalLink(iso, text){
+  const [y,m,d] = iso.split('-').map(Number);
+  const start = new Date(y, m-1, d); const end = new Date(y, m-1, d+1);
+  const fmt = dt => dt.getFullYear()+String(dt.getMonth()+1).padStart(2,'0')+String(dt.getDate()).padStart(2,'0');
+  const params = new URLSearchParams({ action:'TEMPLATE', text: text, dates: fmt(start)+'/'+fmt(end) });
+  return 'https://calendar.google.com/calendar/render?'+params.toString();
+}
+function renderCalendar(){
+  document.getElementById('calTitle').textContent = MONTHS[calMonth]+' '+calYear;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  DOW.forEach(d => { const el=document.createElement('div'); el.className='cal-dow'; el.textContent=d; grid.appendChild(el); });
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const leading = (firstDay===0)?6:firstDay-1;
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const todayStr = todayISO();
+  for(let i=0;i<leading;i++){ const el=document.createElement('div'); el.className='cal-day empty2'; grid.appendChild(el); }
+  for(let d=1; d<=daysInMonth; d++){
+    const iso = isoOf(calYear, calMonth, d);
+    const el = document.createElement('div'); el.className='cal-day';
+    if(iso===todayStr) el.classList.add('today');
+    if(reminders[iso] && reminders[iso].length) el.classList.add('has-rem');
+    if(iso===selectedDate) el.classList.add('selected');
+    el.innerHTML = d + (reminders[iso] && reminders[iso].length ? '<div class="dot"></div>' : '');
+    el.onclick = () => { selectedDate = iso; renderCalendar(); updateSelLabel(); };
+    grid.appendChild(el);
+  }
+  updateSelLabel();
+}
+function updateSelLabel(){
+  if(!selectedDate){ document.getElementById('selDateLabel').textContent='Bir tarih seç'; return; }
+  const [y,m,d] = selectedDate.split('-').map(Number);
+  document.getElementById('selDateLabel').textContent = d+' '+MONTHS[m-1]+' '+y+' için hatırlatıcı';
+}
+document.getElementById('prevMonth').onclick = () => { calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); };
+document.getElementById('nextMonth').onclick = () => { calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); };
+document.getElementById('remAddBtn').onclick = addReminder;
+document.getElementById('remInput').addEventListener('keydown', e => { if(e.key==='Enter') addReminder(); });
+function addReminder(){
+  if(!selectedDate) return;
+  const input = document.getElementById('remInput');
+  const val = input.value.trim();
+  if(!val) return;
+  if(!reminders[selectedDate]) reminders[selectedDate] = [];
+  reminders[selectedDate].push({ id: Date.now(), text: val, by: myName });
+  input.value = '';
+  renderCalendar(); renderReminders(); saveReminders();
+}
+function renderReminders(){
+  const list = document.getElementById('remList');
+  list.innerHTML = '';
+  const todayStr = todayISO();
+  const entries = [];
+  Object.keys(reminders).forEach(iso => { if(iso>=todayStr){ reminders[iso].forEach(r => entries.push({ iso, id:r.id, text:r.text, by:r.by })); } });
+  entries.sort((a,b) => a.iso.localeCompare(b.iso));
+  if(entries.length === 0){ list.innerHTML = '<div class="empty">Yaklaşan hatırlatıcı yok.</div>'; return; }
+  entries.forEach(e => {
+    const [y,m,d] = e.iso.split('-').map(Number);
+    const row = document.createElement('div'); row.className = 'rem-item';
+    row.innerHTML = `<div class="rem-date-badge">${d} ${MONTHS[m-1].slice(0,3)}</div><div class="rem-body"><div class="rem-text">${e.text}</div>${e.by?`<div class="by-tag">${e.by}</div>`:''}</div><a class="rem-cal-link" href="${gcalLink(e.iso,e.text)}" target="_blank" title="Google Takvim'e ekle">📅</a><button class="mood-del">×</button>`;
+    row.querySelector('.mood-del').onclick = () => {
+      reminders[e.iso] = reminders[e.iso].filter(r => r.id !== e.id);
+      if(reminders[e.iso].length === 0) delete reminders[e.iso];
+      renderCalendar(); renderReminders(); saveReminders();
+    };
+    list.appendChild(row);
+  });
+}
+
+/* ---------- DARK MODE ---------- */
+document.getElementById('themeBtn').onclick = async () => {
+  const isDark = document.body.classList.toggle('dark');
+  document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+  try{ await window.storage.set('darkMode', isDark ? '1' : '0', false); }catch(e){}
+};
+async function loadTheme(){
+  try{
+    const r = await window.storage.get('darkMode', false);
+    if(r && r.value === '1'){ document.body.classList.add('dark'); document.getElementById('themeBtn').textContent = '☀️'; }
+  }catch(e){}
+}
+
+/* ---------- ÖNEMLİ GÜNLER ---------- */
+let specialDates = [];
+async function saveDates(){ try{ await window.storage.set('specialDates', JSON.stringify(specialDates), true); }catch(e){} }
+function nextOccurrence(dateStr, recurring){
+  const today = new Date(); today.setHours(0,0,0,0);
+  let d = new Date(dateStr + 'T00:00:00');
+  if(recurring){
+    d.setFullYear(today.getFullYear());
+    if(d < today) d.setFullYear(today.getFullYear() + 1);
+  }
+  return d;
+}
+function renderDates(){
+  const list = document.getElementById('datesList');
+  list.innerHTML = '';
+  if(specialDates.length === 0){ list.innerHTML = '<div class="empty">Henüz önemli bir gün eklenmedi.</div>'; return; }
+  const withDiff = specialDates.map((d,i) => {
+    const occ = nextOccurrence(d.date, d.recurring);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const days = Math.round((occ - today) / 86400000);
+    return { ...d, idx:i, days, occ };
+  }).sort((a,b) => a.days - b.days);
+  withDiff.forEach(d => {
+    const row = document.createElement('div');
+    row.className = 'countdown-card';
+    const label = d.days === 0 ? 'BUGÜN' : d.days === 1 ? 'YARIN' : d.days;
+    row.innerHTML = `
+      <div class="countdown-num">${label}${d.days>1?'<small>gün</small>':''}</div>
+      <div class="countdown-body">
+        <div class="countdown-title">${d.title}</div>
+        <div class="countdown-date">${d.occ.getDate()} ${MONTHS[d.occ.getMonth()]} ${d.occ.getFullYear()}${d.by?' · '+d.by:''}</div>
+      </div>
+      <button class="dates-del">×</button>
+    `;
+    row.querySelector('.dates-del').onclick = () => { specialDates.splice(d.idx,1); renderDates(); saveDates(); };
+    list.appendChild(row);
+  });
+}
+document.getElementById('dateAddBtn').onclick = () => {
+  const title = document.getElementById('dateTitleInput').value.trim();
+  const val = document.getElementById('dateValueInput').value;
+  const recurring = document.getElementById('dateRecurring').checked;
+  if(!title || !val) return;
+  specialDates.push({ title, date: val, recurring, by: myName });
+  document.getElementById('dateTitleInput').value = '';
+  document.getElementById('dateValueInput').value = '';
+  renderDates(); saveDates();
+};
+
+/* ---------- ANI KÖŞESİ ---------- */
+let memories = [];
+async function saveMemories(){
+  try{
+    const ok = await window.storage.set('memories', JSON.stringify(memories), true);
+    if(!ok) alert('Kaydedilemedi, muhtemelen fotoğraflar çok büyük. Daha az/küçük fotoğraf deneyin.');
+  }catch(e){ alert('Kaydedilemedi: depolama alanı dolu olabilir.'); }
+}
+function renderMemories(){
+  const grid = document.getElementById('memGrid');
+  grid.innerHTML = '';
+  if(memories.length === 0){ grid.innerHTML = '<div class="empty">Henüz anı eklenmedi.</div>'; return; }
+  [...memories].reverse().forEach(m => {
+    const idx = memories.indexOf(m);
+    const el = document.createElement('div');
+    el.className = 'mem-item';
+    el.innerHTML = `
+      <img src="${m.img}">
+      <div class="mem-item-body">
+        ${m.caption ? `<div class="mem-caption">${m.caption}</div>` : ''}
+        <div class="mem-meta"><span>${m.date}</span><button class="mem-del">×</button></div>
+      </div>
+    `;
+    el.querySelector('.mem-del').onclick = () => { memories.splice(idx,1); renderMemories(); saveMemories(); };
+    grid.appendChild(el);
+  });
+}
+document.getElementById('memAddBtn').onclick = () => document.getElementById('memFileInput').click();
+document.getElementById('memFileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const img = new Image();
+    img.onload = () => {
+      const maxW = 700;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
+      const caption = prompt('Bu fotoğrafa kısa bir not eklemek ister misin? (boş bırakabilirsin)') || '';
+      const d = new Date();
+      memories.push({ img: dataUrl, caption: caption.trim(), by: myName, date: d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear(), ts: Date.now() });
+      renderMemories(); saveMemories();
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+let lastTaskLen = null;
+function maybeAskNotifPermission(){}
+
+/* ---------- TABS ---------- */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  };
+});
+
+/* ---------- HEADER DATE ---------- */
+const DAYS_FULL = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+const now0 = new Date();
+document.getElementById('today').textContent = DAYS_FULL[now0.getDay()]+', '+now0.getDate()+' '+MONTHS[now0.getMonth()];
+
+loadAll();
+</script>
+</body>
+</html>
